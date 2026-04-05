@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Building2, Tags, CreditCard, LogOut, ChevronRight } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth.jsx'
+import { useBusiness } from '../../hooks/useBusiness.jsx'
 
 const items = [
   { to: '/settings/business', label: 'Business profile', icon: Building2 },
@@ -8,9 +10,25 @@ const items = [
 ]
 
 export default function SettingsIndex() {
+  const { signOut, user } = useAuth()
+  const { business } = useBusiness()
+  const navigate = useNavigate()
+
+  async function onSignOut() {
+    await signOut()
+    navigate('/signin', { replace: true })
+  }
+
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-xl font-bold">Settings</h1>
+      {business && (
+        <div className="card">
+          <div className="text-xs text-slate-500">Signed in as</div>
+          <div className="font-semibold">{business.name}</div>
+          <div className="text-sm text-slate-500">{user?.email}</div>
+        </div>
+      )}
       <div className="card p-0 divide-y divide-slate-100">
         {items.map(({ to, label, icon: Icon }) => (
           <Link
@@ -24,7 +42,10 @@ export default function SettingsIndex() {
           </Link>
         ))}
       </div>
-      <button className="btn-secondary w-full text-red-600 border-red-100">
+      <button
+        onClick={onSignOut}
+        className="btn-secondary w-full text-red-600 border-red-100"
+      >
         <LogOut className="w-4 h-4" />
         Sign out
       </button>

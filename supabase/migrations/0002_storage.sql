@@ -8,6 +8,16 @@ insert into storage.buckets (id, name, public)
 values ('job-photos', 'job-photos', false)
 on conflict (id) do nothing;
 
+-- Drop any pre-existing policies (idempotent)
+drop policy if exists "logos_public_read" on storage.objects;
+drop policy if exists "logos_owner_write" on storage.objects;
+drop policy if exists "logos_owner_update" on storage.objects;
+drop policy if exists "logos_owner_delete" on storage.objects;
+drop policy if exists "job_photos_owner_read" on storage.objects;
+drop policy if exists "job_photos_owner_write" on storage.objects;
+drop policy if exists "job_photos_owner_update" on storage.objects;
+drop policy if exists "job_photos_owner_delete" on storage.objects;
+
 -- business-logos: public read, owner write (path = {business_id}/...)
 create policy "logos_public_read" on storage.objects
   for select using (bucket_id = 'business-logos');
