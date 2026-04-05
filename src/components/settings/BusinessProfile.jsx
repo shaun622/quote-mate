@@ -3,21 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase.js'
 import { useBusiness } from '../../hooks/useBusiness.jsx'
-
-const TRADE_TYPES = [
-  'Fencing',
-  'Retaining Walls',
-  'Electrical',
-  'Plumbing',
-  'Carpentry',
-  'Painting',
-  'Landscaping',
-  'Roofing',
-  'Tiling',
-  'Concreting',
-  'General Building',
-  'Other'
-]
+import TradeTypeInput from './TradeTypeInput.jsx'
 
 export default function BusinessProfile() {
   const { business, refresh } = useBusiness()
@@ -42,6 +28,10 @@ export default function BusinessProfile() {
     e.preventDefault()
     setErr('')
     setInfo('')
+    if (!form.trade_type?.trim()) {
+      setErr('Please describe your trade')
+      return
+    }
     setBusy(true)
     const { error } = await supabase
       .from('businesses')
@@ -84,17 +74,10 @@ export default function BusinessProfile() {
         </div>
         <div>
           <label className="label">Trade type *</label>
-          <select
-            className="input"
+          <TradeTypeInput
             value={form.trade_type}
-            onChange={(e) => set('trade_type', e.target.value)}
-          >
-            {TRADE_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => set('trade_type', v)}
+          />
         </div>
         <div>
           <label className="label">Phone *</label>

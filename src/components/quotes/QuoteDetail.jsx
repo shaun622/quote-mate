@@ -223,6 +223,11 @@ export default function QuoteDetail() {
               Add a customer email to send by email
             </p>
           )}
+          {quote.customer_email && (
+            <p className="text-[11px] text-slate-400 text-center mt-2">
+              Testing with Resend sandbox — emails only deliver to your Resend account email.
+            </p>
+          )}
         </div>
       </div>
     </div>
