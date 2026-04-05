@@ -18,3 +18,4 @@ coverage
 .vite
 dev-dist
 .claude/
+supabase/.temp/
