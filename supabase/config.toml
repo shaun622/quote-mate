@@ -2,3 +2,11 @@ project_id = "wjjyifxkqlsxdjrmgczl"
 
 [functions.send-quote]
 verify_jwt = true
+
+# Public endpoints called from the customer's browser (no login).
+# Token validation happens inside the function.
+[functions.view-quote]
+verify_jwt = false
+
+[functions.respond-to-quote]
+verify_jwt = false
