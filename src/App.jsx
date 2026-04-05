@@ -7,6 +7,7 @@ import Onboarding from './components/auth/Onboarding.jsx'
 import Dashboard from './components/dashboard/Dashboard.jsx'
 import QuoteList from './components/quotes/QuoteList.jsx'
 import QuoteCreate from './components/quotes/QuoteCreate.jsx'
+import QuoteDetail from './components/quotes/QuoteDetail.jsx'
 import JobList from './components/jobs/JobList.jsx'
 import ScheduleCalendar from './components/calendar/ScheduleCalendar.jsx'
 import SettingsIndex from './components/settings/SettingsIndex.jsx'
@@ -36,6 +37,7 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="quotes" element={<QuoteList />} />
             <Route path="quotes/new" element={<QuoteCreate />} />
+            <Route path="quotes/:id" element={<QuoteDetail />} />
             <Route path="jobs" element={<JobList />} />
             <Route path="calendar" element={<ScheduleCalendar />} />
             <Route path="settings" element={<SettingsIndex />} />
