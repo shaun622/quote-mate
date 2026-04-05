@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from 'lucide-react'
 import { useBusiness } from '../../hooks/useBusiness.jsx'
 import { createQuote } from '../../hooks/useQuotes.js'
 import { calcTotals, formatAUD } from '../../lib/utils.js'
+import { supabase } from '../../lib/supabase.js'
 import QuoteItemPicker from './QuoteItemPicker.jsx'
 import QuoteItemRow from './QuoteItemRow.jsx'
 
@@ -64,6 +65,39 @@ export default function QuoteCreate() {
       }
     ])
     setPickerOpen(false)
+    setCustomOpen(false)
+  }
+
+  async function addCustomItem(it, saveToLibrary) {
+    let pricingId = null
+    if (saveToLibrary && business?.id) {
+      const { data } = await supabase
+        .from('pricing_items')
+        .insert({
+          business_id: business.id,
+          name: it.name,
+          category: it.category,
+          unit: it.unit,
+          default_price: it.default_price ?? 0,
+          description: it.description || null,
+          is_active: true
+        })
+        .select()
+        .single()
+      if (data) pricingId = data.id
+    }
+    setItems((cur) => [
+      ...cur,
+      {
+        pricing_item_id: pricingId,
+        name: it.name,
+        description: it.description || '',
+        category: it.category,
+        unit: it.unit,
+        quantity: 1,
+        unit_price: it.default_price ?? 0
+      }
+    ])
     setCustomOpen(false)
   }
 
@@ -374,7 +408,7 @@ export default function QuoteCreate() {
       )}
       {customOpen && (
         <CustomItemModal
-          onAdd={(it) => addItem(it)}
+          onAdd={(it, saveToLibrary) => addCustomItem(it, saveToLibrary)}
           onClose={() => setCustomOpen(false)}
         />
       )}
@@ -402,17 +436,21 @@ function CustomItemModal({ onAdd, onClose }) {
     unit: 'per unit',
     default_price: ''
   })
+  const [saveToLibrary, setSaveToLibrary] = useState(true)
   function submit(e) {
     e.preventDefault()
     if (!form.name.trim()) return
-    onAdd({
-      id: null,
-      name: form.name.trim(),
-      category: form.category,
-      unit: form.unit,
-      default_price: Number(form.default_price) || 0,
-      description: null
-    })
+    onAdd(
+      {
+        id: null,
+        name: form.name.trim(),
+        category: form.category,
+        unit: form.unit,
+        default_price: Number(form.default_price) || 0,
+        description: null
+      },
+      saveToLibrary
+    )
     onClose()
   }
   return (
@@ -469,6 +507,15 @@ function CustomItemModal({ onAdd, onClose }) {
             onChange={(e) => setForm({ ...form, default_price: e.target.value })}
           />
         </div>
+        <label className="flex items-center gap-2 text-sm text-slate-700 select-none">
+          <input
+            type="checkbox"
+            checked={saveToLibrary}
+            onChange={(e) => setSaveToLibrary(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+          />
+          Save to library for reuse
+        </label>
         <div className="flex gap-2">
           <button type="submit" className="btn-primary flex-1">
             Add to quote
