@@ -9,6 +9,7 @@ import QuoteList from './components/quotes/QuoteList.jsx'
 import QuoteCreate from './components/quotes/QuoteCreate.jsx'
 import QuoteDetail from './components/quotes/QuoteDetail.jsx'
 import JobList from './components/jobs/JobList.jsx'
+import JobDetail from './components/jobs/JobDetail.jsx'
 import ScheduleCalendar from './components/calendar/ScheduleCalendar.jsx'
 import SettingsIndex from './components/settings/SettingsIndex.jsx'
 import BusinessProfile from './components/settings/BusinessProfile.jsx'
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="quotes/new" element={<QuoteCreate />} />
             <Route path="quotes/:id" element={<QuoteDetail />} />
             <Route path="jobs" element={<JobList />} />
+            <Route path="jobs/:id" element={<JobDetail />} />
             <Route path="calendar" element={<ScheduleCalendar />} />
             <Route path="settings" element={<SettingsIndex />} />
             <Route path="settings/business" element={<BusinessProfile />} />

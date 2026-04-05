@@ -11,3 +11,7 @@ verify_jwt = false
 
 [functions.respond-to-quote]
 verify_jwt = false
+
+[functions.update-job-status]
+# Auth verified inside the function (incompatible with publishable keys at gateway).
+verify_jwt = false
