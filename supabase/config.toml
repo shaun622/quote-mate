@@ -1,7 +1,8 @@
 project_id = "wjjyifxkqlsxdjrmgczl"
 
 [functions.send-quote]
-verify_jwt = true
+# Auth verified inside the function (incompatible with publishable keys at gateway).
+verify_jwt = false
 
 # Public endpoints called from the customer's browser (no login).
 # Token validation happens inside the function.
