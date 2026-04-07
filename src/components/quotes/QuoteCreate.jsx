@@ -64,7 +64,7 @@ export default function QuoteCreate() {
     return true
   }
 
-  function addItem(it) {
+  function addItem(it, qty) {
     setItems((cur) => [
       ...cur,
       {
@@ -73,7 +73,7 @@ export default function QuoteCreate() {
         description: it.description || '',
         category: it.category,
         unit: it.unit,
-        quantity: 1,
+        quantity: Number(qty) || 1,
         unit_price: it.default_price ?? 0
       }
     ])
@@ -81,7 +81,7 @@ export default function QuoteCreate() {
     setCustomOpen(false)
   }
 
-  async function addCustomItem(it, saveToLibrary) {
+  async function addCustomItem(it, saveToLibrary, qty) {
     let pricingId = null
     if (saveToLibrary && business?.id) {
       const { data } = await supabase
@@ -107,7 +107,7 @@ export default function QuoteCreate() {
         description: it.description || '',
         category: it.category,
         unit: it.unit,
-        quantity: 1,
+        quantity: Number(qty) || 1,
         unit_price: it.default_price ?? 0
       }
     ])
@@ -411,7 +411,7 @@ export default function QuoteCreate() {
 
       {pickerOpen && (
         <QuoteItemPicker
-          onPick={addItem}
+          onPick={(item, qty) => addItem(item, qty)}
           onCustom={() => {
             setPickerOpen(false)
             setCustomOpen(true)
@@ -421,7 +421,7 @@ export default function QuoteCreate() {
       )}
       {customOpen && (
         <CustomItemModal
-          onAdd={(it, saveToLibrary) => addCustomItem(it, saveToLibrary)}
+          onAdd={(it, saveToLibrary, qty) => addCustomItem(it, saveToLibrary, qty)}
           onClose={() => setCustomOpen(false)}
         />
       )}
@@ -447,7 +447,8 @@ function CustomItemModal({ onAdd, onClose }) {
     name: '',
     category: 'Materials',
     unit: 'per unit',
-    default_price: ''
+    default_price: '',
+    quantity: '1'
   })
   const [saveToLibrary, setSaveToLibrary] = useState(true)
   function submit(e) {
@@ -462,7 +463,8 @@ function CustomItemModal({ onAdd, onClose }) {
         default_price: Number(form.default_price) || 0,
         description: null
       },
-      saveToLibrary
+      saveToLibrary,
+      Number(form.quantity) || 1
     )
     onClose()
   }
@@ -511,14 +513,26 @@ function CustomItemModal({ onAdd, onClose }) {
             </select>
           </div>
         </div>
-        <div>
-          <label className="label">Unit price (ex GST)</label>
-          <input
-            inputMode="decimal"
-            className="input"
-            value={form.default_price}
-            onChange={(e) => setForm({ ...form, default_price: e.target.value })}
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label">Unit price (ex GST)</label>
+            <input
+              inputMode="decimal"
+              className="input"
+              value={form.default_price}
+              onChange={(e) => setForm({ ...form, default_price: e.target.value })}
+              placeholder="0.00"
+            />
+          </div>
+          <div>
+            <label className="label">Quantity</label>
+            <input
+              inputMode="decimal"
+              className="input"
+              value={form.quantity}
+              onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+            />
+          </div>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700 select-none">
           <input

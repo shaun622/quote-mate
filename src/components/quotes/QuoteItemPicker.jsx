@@ -1,11 +1,14 @@
-import { useState, useMemo } from 'react'
-import { X, Search, Plus } from 'lucide-react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { X, Search, Plus, Minus, Check } from 'lucide-react'
 import { usePricingItems } from '../../hooks/usePricingItems.js'
 import { formatAUD } from '../../lib/utils.js'
 
 export default function QuoteItemPicker({ onPick, onCustom, onClose }) {
   const { items, loading } = usePricingItems()
   const [q, setQ] = useState('')
+  const [selected, setSelected] = useState(null) // item being qty'd
+  const [qty, setQty] = useState('1')
+  const qtyRef = useRef()
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase()
@@ -28,6 +31,85 @@ export default function QuoteItemPicker({ onPick, onCustom, onClose }) {
       .slice(0, 5)
   }, [items, q])
 
+  function selectItem(item) {
+    setSelected(item)
+    setQty('1')
+    setTimeout(() => qtyRef.current?.select(), 50)
+  }
+
+  function confirmItem() {
+    if (selected) {
+      onPick(selected, Number(qty) || 1)
+      setSelected(null)
+    }
+  }
+
+  function renderItemButton(item, compact) {
+    const isSelected = selected?.id === item.id
+    return (
+      <li key={item.id}>
+        {isSelected ? (
+          <div className={`${compact ? 'px-3 py-2' : 'px-4 py-3'} bg-brand/5 border-l-2 border-brand`}>
+            <div className="font-medium truncate text-sm">{item.name}</div>
+            <div className="text-xs text-slate-500 mb-2">
+              {item.category} · {item.unit} · {formatAUD(item.default_price)} ea
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setQty(String(Math.max(1, (Number(qty) || 1) - 1)))}
+                className="btn-ghost !min-h-0 !p-1.5 border border-slate-200 rounded-lg"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <input
+                ref={qtyRef}
+                inputMode="decimal"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && confirmItem()}
+                className="input !py-1.5 !min-h-0 w-16 text-center text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setQty(String((Number(qty) || 0) + 1))}
+                className="btn-ghost !min-h-0 !p-1.5 border border-slate-200 rounded-lg"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={confirmItem}
+                className="btn-primary !py-1.5 !px-3 !min-h-0 ml-auto"
+              >
+                <Check className="w-4 h-4" />
+                Add
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => selectItem(item)}
+            className={`w-full flex items-center gap-3 ${
+              compact ? 'px-3 py-2' : 'px-4 py-3'
+            } text-left hover:bg-slate-50 active:bg-slate-100`}
+          >
+            <div className="flex-1 min-w-0">
+              <div className={`font-medium truncate ${compact ? 'text-sm' : ''}`}>
+                {item.name}
+              </div>
+              <div className="text-xs text-slate-500">
+                {item.category} · {item.unit}
+              </div>
+            </div>
+            <div className="text-sm font-semibold text-brand">
+              {formatAUD(item.default_price)}
+            </div>
+          </button>
+        )}
+      </li>
+    )
+  }
+
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center">
       <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col safe-bottom">
@@ -45,7 +127,7 @@ export default function QuoteItemPicker({ onPick, onCustom, onClose }) {
               className="input pl-9"
               placeholder="Search your library…"
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => { setQ(e.target.value); setSelected(null) }}
             />
           </div>
           {recent.length > 0 && (
@@ -54,24 +136,7 @@ export default function QuoteItemPicker({ onPick, onCustom, onClose }) {
                 Recent
               </div>
               <ul className="rounded-lg border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-                {recent.map((i) => (
-                  <li key={i.id}>
-                    <button
-                      onClick={() => onPick(i)}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 active:bg-slate-100"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate text-sm">{i.name}</div>
-                        <div className="text-xs text-slate-500">
-                          {i.category} · {i.unit}
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold text-brand">
-                        {formatAUD(i.default_price)}
-                      </div>
-                    </button>
-                  </li>
-                ))}
+                {recent.map((i) => renderItemButton(i, true))}
               </ul>
             </div>
           )}
@@ -97,24 +162,7 @@ export default function QuoteItemPicker({ onPick, onCustom, onClose }) {
                 </div>
               )}
               <ul className="divide-y divide-slate-100">
-                {filtered.map((i) => (
-                  <li key={i.id}>
-                    <button
-                      onClick={() => onPick(i)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 active:bg-slate-100"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{i.name}</div>
-                        <div className="text-xs text-slate-500">
-                          {i.category} · {i.unit}
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold text-brand">
-                        {formatAUD(i.default_price)}
-                      </div>
-                    </button>
-                  </li>
-                ))}
+                {filtered.map((i) => renderItemButton(i, false))}
               </ul>
             </>
           )}
