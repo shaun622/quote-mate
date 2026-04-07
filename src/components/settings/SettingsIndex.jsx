@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Building2, Tags, CreditCard, LogOut, ChevronRight } from 'lucide-react'
+import { Building2, Tags, CreditCard, LogOut, ChevronRight, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { useBusiness } from '../../hooks/useBusiness.jsx'
 
@@ -42,6 +42,16 @@ export default function SettingsIndex() {
           </Link>
         ))}
       </div>
+      <button
+        onClick={() => {
+          localStorage.removeItem('qm_walkthrough_done')
+          navigate('/')
+        }}
+        className="btn-secondary w-full"
+      >
+        <HelpCircle className="w-4 h-4" />
+        Replay walkthrough
+      </button>
       <button
         onClick={onSignOut}
         className="btn-secondary w-full text-red-600 border-red-100"

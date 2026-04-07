@@ -5,9 +5,19 @@ import { supabase } from '../../lib/supabase.js'
 import { useBusiness } from '../../hooks/useBusiness.jsx'
 import { ACTIVE_STATUSES } from '../../hooks/useJobs.js'
 import { formatAUD, formatDateAEST } from '../../lib/utils.js'
+import WalkthroughModal from '../onboarding/WalkthroughModal.jsx'
 
 export default function Dashboard() {
   const { business } = useBusiness()
+  const [showWalkthrough, setShowWalkthrough] = useState(() => {
+    return !localStorage.getItem('qm_walkthrough_done')
+  })
+
+  function dismissWalkthrough() {
+    localStorage.setItem('qm_walkthrough_done', '1')
+    setShowWalkthrough(false)
+  }
+
   const [stats, setStats] = useState({
     quotesThisMonth: 0,
     acceptanceRate: null,
@@ -149,6 +159,10 @@ export default function Dashboard() {
           </ul>
         )}
       </section>
+
+      {showWalkthrough && (
+        <WalkthroughModal onDone={dismissWalkthrough} />
+      )}
     </div>
   )
 }
