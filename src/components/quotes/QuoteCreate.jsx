@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Plus } from 'lucide-react'
 import { useBusiness } from '../../hooks/useBusiness.jsx'
 import { createQuote } from '../../hooks/useQuotes.js'
@@ -13,6 +13,8 @@ const STEPS = ['Customer', 'Items', 'Details', 'Review']
 export default function QuoteCreate() {
   const { business } = useBusiness()
   const navigate = useNavigate()
+  const location = useLocation()
+  const dup = location.state?.duplicate
 
   const [step, setStep] = useState(0)
   const [err, setErr] = useState('')
@@ -21,20 +23,31 @@ export default function QuoteCreate() {
   const [customOpen, setCustomOpen] = useState(false)
 
   const [customer, setCustomer] = useState({
-    customer_name: '',
-    customer_phone: '',
-    customer_email: '',
-    job_site_address: ''
+    customer_name: dup?.customer_name || '',
+    customer_phone: dup?.customer_phone || '',
+    customer_email: dup?.customer_email || '',
+    job_site_address: dup?.job_site_address || ''
   })
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState(() => {
+    if (!dup?.items) return []
+    return dup.items.map((it) => ({
+      pricing_item_id: it.pricing_item_id || null,
+      name: it.name,
+      description: it.description || '',
+      category: it.category,
+      unit: it.unit,
+      quantity: it.quantity ?? 1,
+      unit_price: it.unit_price ?? 0
+    }))
+  })
   const [details, setDetails] = useState({
-    scope_of_work: '',
-    exclusions: '',
-    validity_days: 30,
+    scope_of_work: dup?.scope_of_work || '',
+    exclusions: dup?.exclusions || '',
+    validity_days: dup?.validity_days ?? 30,
     estimated_start: '',
-    estimated_duration: '',
-    notes: '',
-    payment_terms: '50% deposit, 50% on completion'
+    estimated_duration: dup?.estimated_duration || '',
+    notes: dup?.notes || '',
+    payment_terms: dup?.payment_terms || '50% deposit, 50% on completion'
   })
 
   const totals = useMemo(() => calcTotals(items), [items])

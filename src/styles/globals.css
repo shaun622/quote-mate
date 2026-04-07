@@ -23,6 +23,12 @@
   }
 }
 
+@media print {
+  body { background: white !important; }
+  .no-print, nav, .fixed { display: none !important; }
+  .card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; break-inside: avoid; }
+}
+
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium text-sm transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none min-h-[44px];

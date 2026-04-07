@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Play, Pause, CheckCircle2, XCircle, FileText, Phone, Mail, MapPin } from 'lucide-react'
+import JobPhotos from './JobPhotos.jsx'
 import { supabase } from '../../lib/supabase.js'
 import { formatDateAEST, formatAUD } from '../../lib/utils.js'
 import { updateJobStatus } from '../../hooks/useJobs.js'
@@ -190,6 +191,8 @@ export default function JobDetail() {
           </div>
         </section>
       )}
+
+      <JobPhotos jobId={id} />
 
       <section className="card">
         <h2 className="font-semibold mb-2">History</h2>

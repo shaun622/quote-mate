@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Send, Copy, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Send, Copy, ExternalLink, Download, Files } from 'lucide-react'
 import { supabase } from '../../lib/supabase.js'
 import { formatAUD, formatDateAEST } from '../../lib/utils.js'
 import { sendQuoteEmail } from '../../lib/quotes.js'
@@ -60,6 +60,30 @@ export default function QuoteDetail() {
     navigator.clipboard.writeText(url)
     setMsg({ type: 'ok', text: 'Link copied.' })
     setTimeout(() => setMsg({ type: '', text: '' }), 2000)
+  }
+
+  function downloadPdf() {
+    window.open(`${window.location.origin}/quote/${quote.public_token}?print=1`, '_blank')
+  }
+
+  function duplicateQuote() {
+    navigate('/quotes/new', {
+      state: {
+        duplicate: {
+          customer_name: quote.customer_name,
+          customer_phone: quote.customer_phone,
+          customer_email: quote.customer_email,
+          job_site_address: quote.job_site_address,
+          scope_of_work: quote.scope_of_work,
+          exclusions: quote.exclusions,
+          validity_days: quote.validity_days,
+          estimated_duration: quote.estimated_duration,
+          payment_terms: quote.payment_terms,
+          notes: quote.notes,
+          items
+        }
+      }
+    })
   }
 
   if (loading) return <div className="p-4 text-slate-500">Loading…</div>
@@ -203,6 +227,17 @@ export default function QuoteDetail() {
         </div>
       </section>
 
+      <section className="flex gap-2">
+        <button onClick={downloadPdf} className="btn-secondary flex-1">
+          <Download className="w-4 h-4" />
+          Download PDF
+        </button>
+        <button onClick={duplicateQuote} className="btn-secondary flex-1">
+          <Files className="w-4 h-4" />
+          Duplicate
+        </button>
+      </section>
+
       {/* Action footer */}
       <div className="fixed bottom-20 inset-x-0 bg-white border-t border-slate-200 p-3 safe-bottom">
         <div className="max-w-lg mx-auto">
@@ -221,11 +256,6 @@ export default function QuoteDetail() {
           {!quote.customer_email && (
             <p className="text-xs text-slate-500 text-center mt-2">
               Add a customer email to send by email
-            </p>
-          )}
-          {quote.customer_email && (
-            <p className="text-[11px] text-slate-400 text-center mt-2">
-              Testing with Resend sandbox — emails only deliver to your Resend account email.
             </p>
           )}
         </div>

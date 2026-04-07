@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Check, X } from 'lucide-react'
 import { formatAUD, formatDateAEST } from '../../lib/utils.js'
 
@@ -13,6 +13,8 @@ const API_HEADERS = {
 
 export default function CustomerQuoteView() {
   const { token } = useParams()
+  const [searchParams] = useSearchParams()
+  const isPrint = searchParams.get('print') === '1'
   const [state, setState] = useState({ loading: true, data: null, error: '' })
   const [busy, setBusy] = useState(false)
   const [declining, setDeclining] = useState(false)
@@ -40,6 +42,14 @@ export default function CustomerQuoteView() {
   useEffect(() => {
     loadQuote()
   }, [token])
+
+  // Auto-print when opened with ?print=1
+  useEffect(() => {
+    if (isPrint && state.data && !state.loading) {
+      const timer = setTimeout(() => window.print(), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isPrint, state.data, state.loading])
 
   async function respond(action) {
     setBusy(true)
@@ -185,7 +195,7 @@ export default function CustomerQuoteView() {
           </div>
         )}
 
-        {canRespond && !resultMsg && (
+        {canRespond && !resultMsg && !isPrint && (
           <section className="card">
             {declining ? (
               <div className="space-y-3">
@@ -237,7 +247,7 @@ export default function CustomerQuoteView() {
           </section>
         )}
 
-        {!canRespond && !resultMsg && (
+        {!canRespond && !resultMsg && !isPrint && (
           <section className="card text-center text-sm text-slate-600">
             {quote.status === 'accepted' && 'This quote has been accepted.'}
             {quote.status === 'declined' && 'This quote has been declined.'}
