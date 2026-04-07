@@ -119,21 +119,47 @@ Deno.serve(async (req) => {
 
       if (business?.email) {
         const from = Deno.env.get('RESEND_FROM') || 'QuoteMate <onboarding@resend.dev>'
+        const appUrl = (Deno.env.get('APP_URL') || 'http://localhost:5173').replace(/\/$/, '')
+        const brand = business.brand_color || '#1E3A5F'
+        const quoteLink = `${appUrl}/quotes/${quote.id}`
         const subject =
           response === 'accept'
             ? `✓ Accepted: ${quote.quote_number} — ${quote.customer_name}`
             : `Declined: ${quote.quote_number} — ${quote.customer_name}`
-        const body = response === 'accept'
-          ? `<p><strong>${quote.customer_name}</strong> accepted quote <strong>${quote.quote_number}</strong>.</p>
-             <p>Job site: ${quote.job_site_address}</p>
-             <p>A new job has been created for you. Open QuoteMate to see it.</p>`
-          : `<p><strong>${quote.customer_name}</strong> declined quote <strong>${quote.quote_number}</strong>.</p>
-             ${reason ? `<p>Reason: ${reason}</p>` : ''}`
+        const heading = response === 'accept'
+          ? `${quote.customer_name} accepted your quote`
+          : `${quote.customer_name} declined your quote`
+        const detail = response === 'accept'
+          ? `<p style="margin:0 0 8px;font-size:15px;color:#334155;line-height:1.5"><strong>${quote.customer_name}</strong> accepted quote <strong>${quote.quote_number}</strong>.</p>
+             <p style="margin:0 0 8px;font-size:14px;color:#64748b">Job site: ${quote.job_site_address}</p>
+             <p style="margin:0 0 16px;font-size:14px;color:#334155">A new job has been created automatically.</p>`
+          : `<p style="margin:0 0 8px;font-size:15px;color:#334155;line-height:1.5"><strong>${quote.customer_name}</strong> declined quote <strong>${quote.quote_number}</strong>.</p>
+             ${reason ? `<p style="margin:0 0 16px;font-size:14px;color:#64748b">Reason: ${reason}</p>` : ''}`
+        const buttonLabel = response === 'accept' ? 'View job' : 'View quote'
+        const html = `<!doctype html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0f172a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+        <tr><td style="background:${brand};padding:24px">
+          <div style="font-size:22px;font-weight:700;color:#ffffff;margin-bottom:4px">${heading}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.85)">${quote.quote_number}</div>
+        </td></tr>
+        <tr><td style="padding:24px">
+          ${detail}
+          <a href="${quoteLink}" style="display:inline-block;background:${brand};color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 28px;border-radius:8px">${buttonLabel}</a>
+        </td></tr>
+      </table>
+      <p style="font-size:11px;color:#94a3b8;margin:16px 0 0">Sent via QuoteMate</p>
+    </td></tr>
+  </table>
+</body></html>`
         await sendEmail({
           from,
           to: business.email,
           subject,
-          html: `<div style="font-family:sans-serif;font-size:15px;color:#0f172a">${body}</div>`
+          html
         }).catch((e) => console.error('tradie notification failed:', e))
       }
     } catch (e) {
